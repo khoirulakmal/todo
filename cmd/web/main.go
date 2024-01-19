@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
+
 	_ "github.com/go-sql-driver/mysql"
 	"todo.khoirulakmal.dev/internal/models"
 )
@@ -17,6 +20,7 @@ type application struct {
 	infoLog       *log.Logger
 	todos         *models.TodoModel
 	templateCache map[string]*template.Template
+	session       *scs.SessionManager
 }
 
 func main() {
@@ -42,11 +46,16 @@ func main() {
 		infoLog.Printf("Parsing template success!")
 	}
 
+	// Initialize new session manager
+	session := scs.New()
+	session.Store = mysqlstore.New(db)
+
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		todos:         &models.TodoModel{DB: db},
 		templateCache: tmpl,
+		session:       session,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)

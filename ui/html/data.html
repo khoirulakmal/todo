@@ -1,15 +1,8 @@
 {{define "data"}}
 <tbody id="data">
-    {{range .List}}
-    <tr>
-        <th scope="row">{{.ID}}</th>
-        <td>{{.Content}}</td>
-        <td><span class="badge text-bg-success">{{.Status}}</span></td>
-        <td>
-        <button class="btn btn-info btn-sm">Edit</button>
-        <button class="btn btn-danger btn-sm">Delete</button>
-        </td>
-    </tr>
+    {{range .Lists}}
+    {{template "list" .}}
     {{end}}
+
 </tbody>
 {{end}}

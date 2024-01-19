@@ -8,8 +8,9 @@ import (
 )
 
 type templateData struct {
-	Year int
-	List *[]models.List
+	Year  int
+	Lists *[]models.List
+	List  *models.List
 }
 
 func parseTemplate() (map[string]*template.Template, error) {
