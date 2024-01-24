@@ -11,6 +11,7 @@ type templateData struct {
 	Year  int
 	Lists *[]models.List
 	List  *models.List
+	Form  any
 }
 
 func parseTemplate() (map[string]*template.Template, error) {
@@ -21,7 +22,7 @@ func parseTemplate() (map[string]*template.Template, error) {
 	}
 	for _, page := range pages {
 		name := filepath.Base(page)
-		ts, err := template.ParseGlob("ui/html/*.html")
+		ts, err := template.New(name).ParseGlob("ui/html/*.html")
 		if err != nil {
 			return nil, err
 		}

@@ -1,8 +1,9 @@
 {{define "data"}}
 <tbody id="data">
-    {{range .Lists}}
-    {{template "list" .}}
-    {{end}}
-
+    {{if .Lists}}
+        {{range .Lists}}
+        {{template "list" .}}
+        {{end}}
+      {{end}}      
 </tbody>
 {{end}}

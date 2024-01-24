@@ -29,7 +29,7 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) render(w http.ResponseWriter, page string, data templateData) {
+func (app *application) render(w http.ResponseWriter, page string, data *templateData) {
 	pageHTML := fmt.Sprintf("%s.html", page)
 	ts := app.templateCache[pageHTML]
 	err := ts.ExecuteTemplate(w, page, data)
@@ -38,9 +38,8 @@ func (app *application) render(w http.ResponseWriter, page string, data template
 	}
 }
 
-func (app *application) generateTemplateData() templateData {
-	data := templateData{
+func (app *application) generateTemplateData(r *http.Request) *templateData {
+	return &templateData{
 		Year: time.Time.Year(time.Now()),
 	}
-	return data
 }
