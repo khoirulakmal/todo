@@ -1,0 +1,30 @@
+{{define "base"}}
+<!doctype html>
+<html lang='en'>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/bootstrap.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500&display=swap" rel="stylesheet">
+        <!-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> -->
+        <title>{{template "title" .}} - todolist</title>
+    </head>
+    <body>
+        <header>
+            <nav class="container nav mt-3 px-2">
+                <div class="mx-auto my-2">
+                    <img src="../static/img/logo.svg" alt="logo">
+                    <a href="/" class="link-underline link-underline-opacity-0 link-body-emphasis ">todolist</a>
+                </div>
+            </nav>
+        </header>
+        <main>
+            {{template "main" .}}
+        </main>
+        <footer class="text-center">Powered by <a href='https://golang.org/'>Go</a>{{.Year}}</footer>
+        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    </body>
+</html>
+{{end}}

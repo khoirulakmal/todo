@@ -1,0 +1,11 @@
+{{define "form"}}
+<form @submit.prevent="console.log('submitted')" id="listform">
+<label class="my-2" for="list">What do you want to do</label>
+{{with .Form.FieldsError.content}}
+<div class="alert alert-danger" role="alert">
+  {{.}}
+</div>
+{{end}}
+<input type="text" name="list" id="list" class="rounded-4 my-2 p-2" x-model="list" value="{{.Form.Content}}">
+</form>
+{{end}}

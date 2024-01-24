@@ -1,0 +1,9 @@
+{{define "data"}}
+<tbody id="data">
+    {{if .Lists}}
+        {{range .Lists}}
+        {{template "list" .}}
+        {{end}}
+      {{end}}      
+</tbody>
+{{end}}

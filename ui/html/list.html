@@ -1,0 +1,23 @@
+{{define "list"}}
+
+
+<tr x-data="{status: '{{.Status}}'}" id="data-{{.ID}}">
+    <td >{{.Content}}</td>
+    <td><span class="badge text-bg-success" x-text="status"></span></td>
+    <td>
+    <button 
+    hx-put="/status/{{.ID}}"
+    hx-target="#container"
+    hx-swap="outerHTML"
+    hx-trigger="click"
+    class="btn btn-info btn-sm">Done</button>
+
+    <button 
+    hx-put="/delete/{{.ID}}"
+    hx-trigger="click"
+    hx-target="#container"
+    hx-swap="outerHTML"
+    class="btn btn-danger btn-sm">Delete</button>
+    </td>
+</tr>
+{{end}}
