@@ -9,8 +9,8 @@ import (
 )
 
 type todoForm struct {
-	Content string
-	Status  string
+	Content string `form:"list"`
+	Status  string `form:"status"`
 	validator.Validator
 }
 
@@ -43,28 +43,28 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError() helper.
 		return
 	}
-	err := r.ParseForm()
+
+	var decoded todoForm
+	err := app.decodeForm(r, &decoded)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
-		return
 	}
 
-	form := todoForm{
-		Content: r.PostForm.Get("list"),
-		Status:  "ongoing",
-	}
+	statusList := []string{"ongoing", "pending"}
 
-	form.CheckField(validator.MinChars(form.Content, 5), "Content", "Content must be more than 5 characters")
-	form.CheckField(validator.MaxChars(form.Content, 20), "Content", "Content must be less than 20 characters")
+	decoded.CheckField(validator.MinChars(decoded.Content, 5), "Content", "Content must be more than 5 characters")
+	decoded.CheckField(validator.MaxChars(decoded.Content, 20), "Content", "Content must be less than 20 characters")
+	decoded.CheckField(validator.PermittedString(decoded.Status, statusList...), "Status", "Status must be select between pending and ongoing")
 
-	if !form.Valid() {
+	if !decoded.Valid() {
 		list, err := app.todos.GetRows()
 		if err != nil {
 			app.serverError(w, err)
 			return
 		}
 		data := app.generateTemplateData(r)
-		data.Form = form
+		data.Form = decoded
+		app.infoLog.Print(decoded)
 		data.Lists = &list
 		// w.Header().Add("HX-Retarget", "#container")
 		// w.Header().Add("HX-Reswap", "afterend")
@@ -72,7 +72,7 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := app.todos.Insert(form.Content, form.Status)
+	id, err := app.todos.Insert(decoded.Content, decoded.Status)
 	if err != nil {
 		app.serverError(w, err)
 		app.errorLog.Print(err)

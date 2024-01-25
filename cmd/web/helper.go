@@ -43,3 +43,16 @@ func (app *application) generateTemplateData(r *http.Request) *templateData {
 		Year: time.Time.Year(time.Now()),
 	}
 }
+
+func (app *application) decodeForm(r *http.Request, form any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecode.Decode(&form, r.PostForm)
+	if err != nil {
+		return err
+	}
+	return nil
+}

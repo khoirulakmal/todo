@@ -11,6 +11,7 @@ import (
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 
+	"github.com/go-playground/form"
 	_ "github.com/go-sql-driver/mysql"
 	"todo.khoirulakmal.dev/internal/models"
 )
@@ -21,6 +22,7 @@ type application struct {
 	todos         *models.TodoModel
 	templateCache map[string]*template.Template
 	session       *scs.SessionManager
+	formDecode    *form.Decoder
 }
 
 func main() {
@@ -50,12 +52,16 @@ func main() {
 	session := scs.New()
 	session.Store = mysqlstore.New(db)
 
+	// Initialize form decoder
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		todos:         &models.TodoModel{DB: db},
 		templateCache: tmpl,
 		session:       session,
+		formDecode:    formDecoder,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)

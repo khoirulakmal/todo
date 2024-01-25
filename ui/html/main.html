@@ -16,6 +16,11 @@
             </div>
             {{end}}
             <input type="text" name="list" id="list" class="form-control rounded-4 my-2 p-2" x-model="list" value="{{.Form.Content}}">
+            <label for="status">Choose a status:</label>
+            <select name="status" id="status" value="{{.Form.Status}} required">
+              <option value="pending">Pending</option>
+              <option selected value="ongoing">Ongoing</option>
+            </select>
         </form>
           <button 
           hx-post="/create"
