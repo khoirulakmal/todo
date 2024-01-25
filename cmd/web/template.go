@@ -12,6 +12,7 @@ type templateData struct {
 	Lists *[]models.List
 	List  *models.List
 	Form  any
+	Flash string
 }
 
 func parseTemplate() (map[string]*template.Template, error) {

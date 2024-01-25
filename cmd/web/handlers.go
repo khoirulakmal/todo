@@ -66,8 +66,6 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 		data.Form = decoded
 		app.infoLog.Print(decoded)
 		data.Lists = &list
-		// w.Header().Add("HX-Retarget", "#container")
-		// w.Header().Add("HX-Reswap", "afterend")
 		app.render(w, "main", data)
 		return
 	}
@@ -78,6 +76,7 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 		app.errorLog.Print(err)
 		return
 	}
+	app.session.Put(r.Context(), "flash", "List succesfully created!")
 	w.Header().Add("form ID", strconv.Itoa(id))
 	app.getLists(w, r)
 
@@ -92,6 +91,7 @@ func (app *application) getLists(w http.ResponseWriter, r *http.Request) {
 	messages := app.session.GetString(r.Context(), "Message")
 	w.Header().Add("Sessions", messages)
 	data := app.generateTemplateData(r)
+	data.Flash = app.session.PopString(r.Context(), "flash")
 	data.Lists = &list
 	data.Form = todoForm{
 		Status: "ongoing",
@@ -129,8 +129,10 @@ func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
 	deleteList, err := app.todos.Delete(id)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
-	if deleteList != -1 {
+	if deleteList {
+		app.session.Put(r.Context(), "flash", "List succesfully deleted!")
 		app.getLists(w, r)
 	}
 }
@@ -151,11 +153,12 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	doneList, err := app.todos.Done(id)
-	app.session.Put(r.Context(), "Message", "Yeah its me baby")
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
-	if doneList != -1 {
+	if doneList {
+		app.session.Put(r.Context(), "flash", "List succesfully updated!")
 		app.getLists(w, r)
 	}
 }

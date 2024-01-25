@@ -63,28 +63,20 @@ func (m *TodoModel) GetRows() ([]List, error) {
 	return lists, nil
 }
 
-func (m *TodoModel) Delete(id int64) (int64, error) {
+func (m *TodoModel) Delete(id int64) (bool, error) {
 	statement := "DELETE FROM lists WHERE id = ?"
-	result, err := m.DB.Exec(statement, id)
+	_, err := m.DB.Exec(statement, id)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
-	id, err = result.LastInsertId()
-	if err != nil {
-		return -1, err
-	}
-	return id, nil
+	return true, nil
 }
 
-func (m *TodoModel) Done(id int64) (int64, error) {
+func (m *TodoModel) Done(id int64) (bool, error) {
 	statement := "UPDATE lists SET status = 'Done' WHERE ID = ?"
-	result, err := m.DB.Exec(statement, id)
+	_, err := m.DB.Exec(statement, id)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
-	id, err = result.LastInsertId()
-	if err != nil {
-		return -1, err
-	}
-	return id, nil
+	return true, nil
 }

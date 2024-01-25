@@ -31,6 +31,12 @@
           class="btn btn-dark my-2"
           @click.debounce.700ms="list = ''"
           x-bind:disabled="list.length < 5 || list.length > 20">Submit</button>
+          {{with .Flash}}
+          <div class="alert alert-info" role="alert">
+           {{.}}
+          </div>
+          {{end}}
+          
       </div>
       <div class="my-2">
           <h1>List</h1>

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
@@ -51,6 +52,7 @@ func main() {
 	// Initialize new session manager
 	session := scs.New()
 	session.Store = mysqlstore.New(db)
+	session.Lifetime = 2 * time.Hour
 
 	// Initialize form decoder
 	formDecoder := form.NewDecoder()
