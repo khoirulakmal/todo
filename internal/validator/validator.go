@@ -64,7 +64,7 @@ func PermittedInt(value int, permittedValues ...int) bool {
 
 // Return true if value is in acceptable status list
 func PermittedString(value string, permittedValues ...string) bool {
-	for i, _ := range permittedValues {
+	for i := range permittedValues {
 		if value == permittedValues[i] {
 			return true
 		}
