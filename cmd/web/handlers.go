@@ -32,7 +32,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 			FieldErrors: nil,
 		},
 	}
-	app.render(w, "base", data)
+	app.render(w, "main", data)
 
 }
 
@@ -93,6 +93,7 @@ func (app *application) getLists(w http.ResponseWriter, r *http.Request) {
 	data := app.generateTemplateData(r)
 	data.Flash = app.session.PopString(r.Context(), "flash")
 	data.Lists = &list
+	data.Page = "main"
 	data.Form = todoForm{
 		Status: "ongoing",
 	}
