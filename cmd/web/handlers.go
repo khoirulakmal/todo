@@ -127,12 +127,12 @@ func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
-	deleteList, err := app.todos.Delete(id)
+	success, err := app.todos.Delete(id)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
-	if deleteList {
+	if success {
 		app.session.Put(r.Context(), "flash", "List succesfully deleted!")
 		app.getLists(w, r)
 	}
@@ -153,12 +153,12 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
-	doneList, err := app.todos.Done(id)
+	success, err := app.todos.Done(id)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
-	if doneList {
+	if success {
 		app.session.Put(r.Context(), "flash", "List succesfully updated!")
 		app.getLists(w, r)
 	}
