@@ -163,3 +163,13 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 		app.getLists(w, r)
 	}
 }
+
+func (app *application) signIn(w http.ResponseWriter, r *http.Request) {
+	data := app.generateTemplateData(r)
+	app.render(w, "login", data)
+}
+
+func (app *application) signUp(w http.ResponseWriter, r *http.Request) {
+	data := app.generateTemplateData(r)
+	app.render(w, "signup", data)
+}
