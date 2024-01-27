@@ -32,7 +32,9 @@ func parseTemplate() (map[string]*template.Template, error) {
 		files := []string{
 			"./ui/html/base.html",
 			"./ui/html/partials/nav.html",
-			"./ui/html/partials/data.html",
+			"./ui/html/dynamic/status.html",
+			"./ui/html/dynamic/data.html",
+			"./ui/html/dynamic/list.html",
 			page,
 		}
 		ts, err := template.New(name).ParseFiles(files...)

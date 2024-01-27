@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"todo.khoirulakmal.dev/internal/validator"
@@ -57,15 +58,11 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 	decoded.CheckField(validator.PermittedString(decoded.Status, statusList...), "Status", "Status must be select between pending and ongoing")
 
 	if !decoded.Valid() {
-		list, err := app.todos.GetRows()
-		if err != nil {
-			app.serverError(w, err)
-			return
-		}
 		data := app.generateTemplateData(r)
 		data.Form = decoded
-		app.infoLog.Print(decoded)
-		data.Lists = &list
+		data.Page = "status"
+		w.Header().Add("HX-Retarget", "#formStatus")
+		w.Header().Add("HX-Reswap", "innerHTML")
 		app.render(w, "main", data)
 		return
 	}
@@ -76,41 +73,44 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 		app.errorLog.Print(err)
 		return
 	}
-	app.session.Put(r.Context(), "flash", "List succesfully created!")
-	w.Header().Add("form ID", strconv.Itoa(id))
-	app.getLists(w, r)
+	app.session.Put(r.Context(), "dataID", id)
+	data := app.generateTemplateData(r)
+	data.Flash = "List created success!"
+	data.Page = "status"
+	data.Form = todoForm{}
+	w.Header().Add("HX-Trigger", "newList")
+	app.render(w, "main", data)
 
 }
 
-func (app *application) getLists(w http.ResponseWriter, r *http.Request) {
-	list, err := app.todos.GetRows()
+func (app *application) getList(w http.ResponseWriter, r *http.Request) {
+	// We can then use the ByName() method to get the value of the "id" named
+	// parameter from the slice and validate it as normal.
+	id := app.session.GetInt(r.Context(), "dataID")
+	app.infoLog.Print(id)
+	list, err := app.todos.Get(id)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
-	messages := app.session.GetString(r.Context(), "Message")
-	w.Header().Add("Sessions", messages)
-	data := app.generateTemplateData(r)
-	data.Flash = app.session.PopString(r.Context(), "flash")
-	data.Lists = &list
-	data.Page = "main"
-	data.Form = todoForm{
-		Status: "ongoing",
+	updateList := app.session.PopBool(r.Context(), "updateList")
+	if updateList {
+		idData := strings.Join([]string{"#data-", strconv.Itoa(int(id))}, "")
+		w.Header().Add("HX-Retarget", idData)
+		w.Header().Add("HX-Reswap", "outerHTML")
+		data := app.generateTemplateData(r)
+		data.List = list
+		data.Page = "list"
+		app.render(w, "main", data)
+		return
 	}
+	data := app.generateTemplateData(r)
+	data.List = list
+	data.Page = "list"
+	w.Header().Add("HX-Retarget", "#data")
+	app.infoLog.Print(data.List)
 	app.render(w, "main", data)
 }
-
-// func (app *application) getList(w http.ResponseWriter, r *http.Request, id int) {
-// 	list, err := app.todos.Get(id)
-// 	if err != nil {
-// 		app.serverError(w, err)
-// 		return
-// 	}
-// 	data := app.generateTemplateData()
-// 	data.List = list
-// 	app.infoLog.Print(data.List.Status)
-// 	app.render(w, "data", data)
-// }
 
 func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
 	// When httprouter is parsing a request, the values of any named parameters
@@ -133,8 +133,15 @@ func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if success {
-		app.session.Put(r.Context(), "flash", "List succesfully deleted!")
-		app.getLists(w, r)
+		idData := strings.Join([]string{"#data-", strconv.Itoa(int(id))}, "")
+		w.Header().Add("HX-Retarget", idData)
+		w.Header().Add("HX-Reswap", "delete")
+		data := app.generateTemplateData(r)
+		data.Flash = "List succesfully deleted!"
+		data.Page = "status"
+		data.Form = todoForm{}
+		app.render(w, "main", data)
+		return
 	}
 }
 
@@ -158,9 +165,17 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+
 	if success {
-		app.session.Put(r.Context(), "flash", "List succesfully updated!")
-		app.getLists(w, r)
+		app.infoLog.Printf("Row ID is %v", id)
+		app.session.Put(r.Context(), "dataID", int(id))
+		app.session.Put(r.Context(), "updateList", true)
+		data := app.generateTemplateData(r)
+		data.Flash = "List updated success!"
+		data.Page = "status"
+		data.Form = todoForm{}
+		w.Header().Add("HX-Trigger", "updateList")
+		app.render(w, "main", data)
 	}
 }
 
