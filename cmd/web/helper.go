@@ -31,8 +31,17 @@ func (app *application) notFound(w http.ResponseWriter) {
 
 func (app *application) render(w http.ResponseWriter, page string, data *templateData) {
 	pageHTML := fmt.Sprintf("%s.html", page)
-	ts := app.templateCache[pageHTML]
-	err := ts.ExecuteTemplate(w, page, data)
+	ts, ok := app.templateCache[pageHTML]
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		app.serverError(w, err)
+		return
+	}
+	renderpage := "base"
+	if len(data.Page) > 0 {
+		renderpage = data.Page
+	}
+	err := ts.ExecuteTemplate(w, renderpage, data)
 	if err != nil {
 		app.serverError(w, err)
 	}
@@ -42,4 +51,17 @@ func (app *application) generateTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		Year: time.Time.Year(time.Now()),
 	}
+}
+
+func (app *application) decodeForm(r *http.Request, form any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecode.Decode(&form, r.PostForm)
+	if err != nil {
+		return err
+	}
+	return nil
 }

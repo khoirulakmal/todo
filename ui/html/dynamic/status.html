@@ -1,0 +1,16 @@
+{{define "status"}}
+    {{with .Form.FieldErrors}}
+        <div class="alert alert-danger" role="alert">
+        {{ range $key, $value := . }}
+            <p><strong>{{ $key }}:</strong> {{ $value }}</p>
+        {{ end }}
+        </div>
+    {{end}}
+    {{with .Flash}}
+    <div hx-swap-oob="innerHTML:#formStatus">
+        <div class="alert alert-info" role="alert" >     
+            {{.}}
+        </div>
+    </div>
+    {{end}}
+{{end}}

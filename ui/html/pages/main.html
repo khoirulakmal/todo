@@ -8,28 +8,29 @@
       <div class="card mx-auto w-50 p-3 rounded-4" x-data="{list: ''}">
         <form @submit.prevent="console.log('submitted')" id="listform">
           <label class="form-label my-2" for="list">What do you want to do</label>
-            {{with .Form.FieldErrors}}
-            <div class="alert alert-danger" role="alert">
-              {{ range $key, $value := . }}
-              <p><strong>{{ $key }}:</strong> {{ $value }}</p>
-            {{ end }}
-            </div>
-            {{end}}
             <input type="text" name="list" id="list" class="form-control rounded-4 my-2 p-2" x-model="list" value="{{.Form.Content}}">
+            <label for="status">Choose a status:</label>
+            <select name="status" id="status" value="{{.Form.Status}} required">
+              <option value="pending">Pending</option>
+              <option selected value="ongoing">Ongoing</option>
+            </select>
         </form>
           <button 
           hx-post="/create"
           hx-trigger="click"
           hx-include="#listform"
-          hx-target="#container"
-          hx-swap="outerHTML"
+          hx-swap="beforeend"
           class="btn btn-dark my-2"
           @click.debounce.700ms="list = ''"
           x-bind:disabled="list.length < 5 || list.length > 20">Submit</button>
+          <div id="formStatus">
+            {{template "status" .}}
+           </div>
+          
       </div>
       <div class="my-2">
           <h1>List</h1>
-          <table class="table table-striped text-black p-2">
+          <table class="table table-striped text-black p-2" hx-trigger="newList from:body" hx-get="/created" hx-swap="beforeend">
               <thead>
                   <tr class="table-primary">
                     <th scope="col">List</th>
@@ -37,7 +38,7 @@
                     <th scope="col">Tools</th>
                   </tr>
                 </thead>
-                  {{template "data" .}}              
+                {{template "data" .}}
           </table>
       </div>
   </div>
