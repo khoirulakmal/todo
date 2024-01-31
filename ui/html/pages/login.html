@@ -3,19 +3,35 @@
 
     <section class="container col my-5">
         <h1 class="text-center">Login</h1>
-        <form class="container" x-data="{email: '', password: '',}">
-            <div class="mb-3">
-              <label for="exampleInputEmail1" class="form-label">Email address</label>
-              <input x-model="email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+        {{with .Flash}}
+        <div class="alert alert-info" role="alert" >     
+          {{.}}
+        </div>
+      {{end}}
+      {{range .Form.NonFieldErrors}}
+      <div class="alert alert-danger" role="alert">
+        {{.}}
+      </div>
+      {{end}}
+        <form class="container" x-data="{email: '', password: '',}" action="/user/login" method="POST" novalidate>
+          <div class="mb-3">
+            {{with .Form.FieldErrors.email}}
+            <div class="alert alert-danger" role="alert">
+              {{.}}
             </div>
-            <div class="mb-3">
-              <label for="exampleInputPassword1" class="form-label">Password</label>
-              <input x-model.lazy="password" type="password" class="form-control" id="exampleInputPassword1">
+              {{end}}
+            <label for="email" class="form-label">Email address</label>
+            <input x-model.lazy="email" type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" value="{{.Form.Email}}">
+          </div>
+          <div class="mb-3">
+            {{with .Form.FieldErrors.password}}
+            <div class="alert alert-danger" role="alert">
+              {{.}}
             </div>
-            <div class="mb-3 form-check">
-              <input type="checkbox" class="form-check-input" id="exampleCheck1">
-              <label class="form-check-label" for="exampleCheck1">Check me out</label>
-            </div>
+              {{end}}
+            <label for="password" class="form-label">Password</label>
+            <input x-model.lazy="password" type="password" class="form-control" id="password" name="password">
+          </div>         
             <button type="submit" class="btn btn-dark" x-bind:disabled="email.length == 0 || password.length == 0">Sign in</button>
           </form>
     </section>

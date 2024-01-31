@@ -29,7 +29,7 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) render(w http.ResponseWriter, page string, data *templateData) {
+func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
 	pageHTML := fmt.Sprintf("%s.html", page)
 	ts, ok := app.templateCache[pageHTML]
 	if !ok {
@@ -41,6 +41,7 @@ func (app *application) render(w http.ResponseWriter, page string, data *templat
 	if len(data.Page) > 0 {
 		renderpage = data.Page
 	}
+	w.WriteHeader(status)
 	err := ts.ExecuteTemplate(w, renderpage, data)
 	if err != nil {
 		app.serverError(w, err)

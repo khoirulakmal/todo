@@ -1,17 +1,32 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	"todo.khoirulakmal.dev/internal/models"
 	"todo.khoirulakmal.dev/internal/validator"
 )
 
 type todoForm struct {
 	Content string `form:"list"`
 	Status  string `form:"status"`
+	validator.Validator
+}
+
+type userRegister struct {
+	Name     string `form:"name"`
+	Email    string `form:"email"`
+	Password string `form:"password"`
+	validator.Validator
+}
+
+type userLogin struct {
+	Email    string `form:"email"`
+	Password string `form:"password"`
 	validator.Validator
 }
 
@@ -27,24 +42,19 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 	data := app.generateTemplateData(r)
 	data.Lists = &result
+	data.Flash = app.session.PopString(r.Context(), "flash")
 	data.Form = todoForm{
 		Status: "ongo",
 		Validator: validator.Validator{
 			FieldErrors: nil,
 		},
 	}
-	app.render(w, "main", data)
+	app.render(w, http.StatusOK, "main", data)
 
 }
 
 // Add a snippetCreate handler function.
 func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", "POST")
-		app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError() helper.
-		return
-	}
-
 	var decoded todoForm
 	err := app.decodeForm(r, &decoded)
 	if err != nil {
@@ -63,7 +73,7 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 		data.Page = "status"
 		w.Header().Add("HX-Retarget", "#formStatus")
 		w.Header().Add("HX-Reswap", "innerHTML")
-		app.render(w, "main", data)
+		app.render(w, http.StatusUnprocessableEntity, "main", data)
 		return
 	}
 
@@ -79,7 +89,7 @@ func (app *application) todoCreate(w http.ResponseWriter, r *http.Request) {
 	data.Page = "status"
 	data.Form = todoForm{}
 	w.Header().Add("HX-Trigger", "newList")
-	app.render(w, "main", data)
+	app.render(w, http.StatusAccepted, "main", data)
 
 }
 
@@ -101,7 +111,7 @@ func (app *application) getList(w http.ResponseWriter, r *http.Request) {
 		data := app.generateTemplateData(r)
 		data.List = list
 		data.Page = "list"
-		app.render(w, "main", data)
+		app.render(w, http.StatusAccepted, "main", data)
 		return
 	}
 	data := app.generateTemplateData(r)
@@ -109,7 +119,7 @@ func (app *application) getList(w http.ResponseWriter, r *http.Request) {
 	data.Page = "list"
 	w.Header().Add("HX-Retarget", "#data")
 	app.infoLog.Print(data.List)
-	app.render(w, "main", data)
+	app.render(w, http.StatusAccepted, "main", data)
 }
 
 func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +150,7 @@ func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
 		data.Flash = "List succesfully deleted!"
 		data.Page = "status"
 		data.Form = todoForm{}
-		app.render(w, "main", data)
+		app.render(w, http.StatusAccepted, "main", data)
 		return
 	}
 }
@@ -175,16 +185,98 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 		data.Page = "status"
 		data.Form = todoForm{}
 		w.Header().Add("HX-Trigger", "updateList")
-		app.render(w, "main", data)
+		app.render(w, http.StatusAccepted, "main", data)
 	}
 }
 
-func (app *application) signIn(w http.ResponseWriter, r *http.Request) {
+func (app *application) getLogin(w http.ResponseWriter, r *http.Request) {
 	data := app.generateTemplateData(r)
-	app.render(w, "login", data)
+	data.Flash = app.session.PopString(r.Context(), "flash")
+	data.Form = userRegister{}
+	app.render(w, http.StatusOK, "login", data)
 }
 
-func (app *application) signUp(w http.ResponseWriter, r *http.Request) {
+func (app *application) getRegister(w http.ResponseWriter, r *http.Request) {
 	data := app.generateTemplateData(r)
-	app.render(w, "signup", data)
+	data.Form = userRegister{}
+	app.render(w, http.StatusOK, "signup", data)
+}
+
+func (app *application) postRegister(w http.ResponseWriter, r *http.Request) {
+	var decodeForm userRegister
+	err := app.decodeForm(r, &decodeForm)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+	decodeForm.CheckField(validator.NotBlank(decodeForm.Name), "name", "Name must be filled!")
+	decodeForm.CheckField(validator.NotBlank(decodeForm.Email), "email", "Email must be filled!")
+	decodeForm.CheckField(validator.NotBlank(decodeForm.Password), "password", "Password must be filled!")
+	decodeForm.CheckField(validator.Matches(decodeForm.Email, validator.EmailRX), "email", "Email must be in a correct format!")
+	decodeForm.CheckField(validator.MinChars(decodeForm.Password, 8), "password", "Password must be more than 8 characters!")
+	if !decodeForm.Valid() {
+		data := app.generateTemplateData(r)
+		data.Form = decodeForm
+		app.render(w, http.StatusUnprocessableEntity, "signup", data)
+		return
+	}
+	err = app.users.Insert(decodeForm.Name, decodeForm.Email, decodeForm.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			decodeForm.AddFieldError("email", "Email address is already in use")
+			data := app.generateTemplateData(r)
+			data.Form = decodeForm
+			app.render(w, http.StatusUnprocessableEntity, "signup", data)
+		} else {
+			app.serverError(w, err)
+		}
+		app.errorLog.Print(err)
+		return
+	}
+	// Otherwise add a confirmation flash message to the session confirming that
+	// their signup worked.
+	app.session.Put(r.Context(), "flash", "Your signup was succesful. Please log in")
+
+	// And redirect the user to the login page.
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+func (app *application) postLogin(w http.ResponseWriter, r *http.Request) {
+	var form userLogin
+	err := app.decodeForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+	form.CheckField(validator.NotBlank(form.Email), "email", "Email must be filled!")
+	form.CheckField(validator.NotBlank(form.Password), "password", "Password must be filled!")
+	if !form.Valid() {
+		data := app.generateTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "login", data)
+	}
+	id, err := app.users.Auth(form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddNonFielderror("Email or password is incorrect")
+			data := app.generateTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "login", data)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+	err = app.session.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	app.session.Put(r.Context(), "authUser", id)
+	app.session.Put(r.Context(), "flash", "Login Success!")
+
+	// Redirect the user to the create snippet page.
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) logout(w http.ResponseWriter, r *http.Request) {
+
 }

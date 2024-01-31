@@ -5,12 +5,12 @@
   <td><span class="badge text-bg-success" x-text="status"></span></td>
   <td>
   <button 
-  hx-put="/status/{{.ID}}"
+  hx-put="/todo/status/{{.ID}}"
   hx-trigger="click"
   class="btn btn-info btn-sm">Done</button>
 
     <button 
-    hx-put="/delete/{{.ID}}"
+    hx-put="/todo/delete/{{.ID}}"
     hx-trigger="click"
     hx-swap="outerHTML"
     class="btn btn-danger btn-sm">Delete</button>
