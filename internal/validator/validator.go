@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -8,8 +9,16 @@ import (
 // Define a new Validator type which contains a map of validation errors for our
 // form fields.
 type Validator struct {
-	FieldErrors map[string]string
+	NonFieldErrors []string
+	FieldErrors    map[string]string
 }
+
+// Use the regexp.MustCompile() function to parse a regular expression pattern
+// for sanity checking the format of an email address. This returns a pointer to
+// a 'compiled' regexp.Regexp type, or panics in the event of an error. Parsing
+// this pattern once at startup and storing the compiled *regexp.Regexp in a
+// variable is more performant than re-parsing the pattern each time we need it.
+var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 // Valid() returns true if the FieldErrors map doesn't contain any entries.
 func (v *Validator) Valid() bool {
@@ -28,6 +37,10 @@ func (v *Validator) AddFieldError(key, message string) {
 	if _, exists := v.FieldErrors[key]; !exists {
 		v.FieldErrors[key] = message
 	}
+}
+
+func (v *Validator) AddNonFielderror(message string) {
+	v.NonFieldErrors = append(v.NonFieldErrors, message)
 }
 
 // CheckField() adds an error message to the FieldErrors map only if a
@@ -70,4 +83,8 @@ func PermittedString(value string, permittedValues ...string) bool {
 		}
 	}
 	return false
+}
+
+func Matches(value string, regexp *regexp.Regexp) bool {
+	return regexp.MatchString(value)
 }
