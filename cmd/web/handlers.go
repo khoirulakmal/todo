@@ -42,7 +42,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 	data := app.generateTemplateData(r)
 	data.Lists = &result
-	data.Flash = app.session.PopString(r.Context(), "flash")
 	data.Form = todoForm{
 		Status: "ongo",
 		Validator: validator.Validator{
@@ -97,7 +96,6 @@ func (app *application) getList(w http.ResponseWriter, r *http.Request) {
 	// We can then use the ByName() method to get the value of the "id" named
 	// parameter from the slice and validate it as normal.
 	id := app.session.GetInt(r.Context(), "dataID")
-	app.infoLog.Print(id)
 	list, err := app.todos.Get(id)
 	if err != nil {
 		app.serverError(w, err)
@@ -118,7 +116,6 @@ func (app *application) getList(w http.ResponseWriter, r *http.Request) {
 	data.List = list
 	data.Page = "list"
 	w.Header().Add("HX-Retarget", "#data")
-	app.infoLog.Print(data.List)
 	app.render(w, http.StatusAccepted, "main", data)
 }
 
@@ -177,7 +174,6 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if success {
-		app.infoLog.Printf("Row ID is %v", id)
 		app.session.Put(r.Context(), "dataID", int(id))
 		app.session.Put(r.Context(), "updateList", true)
 		data := app.generateTemplateData(r)
@@ -191,7 +187,6 @@ func (app *application) updateStatus(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getLogin(w http.ResponseWriter, r *http.Request) {
 	data := app.generateTemplateData(r)
-	data.Flash = app.session.PopString(r.Context(), "flash")
 	data.Form = userRegister{}
 	app.render(w, http.StatusOK, "login", data)
 }
@@ -278,5 +273,6 @@ func (app *application) postLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) logout(w http.ResponseWriter, r *http.Request) {
-
+	app.session.Remove(r.Context(), "authUser")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

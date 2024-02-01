@@ -15,6 +15,7 @@
               <option selected value="ongoing">Ongoing</option>
             </select>
         </form>
+        {{ if .Auth}}
           <button 
           hx-post="/todo/create"
           hx-trigger="click"
@@ -23,6 +24,11 @@
           class="btn btn-dark my-2"
           @click.debounce.700ms="list = ''"
           x-bind:disabled="list.length < 5 || list.length > 20">Submit</button>
+          {{ else }}
+          <div class="alert alert-info" role="alert" style="margin-top: 20px;" >     
+            Please login before submiting list
+        </div>
+        {{ end }}
           <div id="formStatus">
             {{template "status" .}}
            </div>
@@ -30,11 +36,12 @@
       </div>
       <div class="my-2">
           <h1>List</h1>
-          <table class="table table-striped text-black p-2" hx-trigger="newList from:body" hx-get="/created" hx-swap="beforeend">
+          <table class="table table-striped text-black p-2" hx-trigger="newList from:body" hx-get="/todo/created" hx-swap="beforeend">
               <thead>
                   <tr class="table-primary">
                     <th scope="col">List</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Created</th>
                     <th scope="col">Tools</th>
                   </tr>
                 </thead>

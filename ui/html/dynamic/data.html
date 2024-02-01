@@ -1,11 +1,13 @@
 {{define "data"}}
-<tbody id="data" hx-trigger="updateList" hx-get="/created">
+<tbody id="data" hx-trigger="updateList" hx-get="/todo/created">
     {{if .Lists}}
         {{range .Lists}}
           <tr x-data="{status: '{{.Status}}'}" id="data-{{.ID}}">
             <td >{{.Content}}</td>
             <td><span class="badge text-bg-success" x-text="status"></span></td>
+            <td>{{humanDate .Date}}</td>
             <td>
+              {{ if $.Auth}}
             <button 
             hx-put="/todo/status/{{.ID}}"
             hx-trigger="click"
@@ -17,6 +19,11 @@
             hx-target="#data"
             hx-swap="outerHTML"
             class="btn btn-danger btn-sm">Delete</button>
+            {{ else }}
+            <div>
+              Editing not available
+            </div>
+            {{ end }}
             </td>
         </tr>
         {{end}}
