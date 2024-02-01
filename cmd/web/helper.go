@@ -48,9 +48,15 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	}
 }
 
+func (app *application) isUserAuth(r *http.Request) bool {
+	return app.session.Exists(r.Context(), "authUser")
+}
+
 func (app *application) generateTemplateData(r *http.Request) *templateData {
 	return &templateData{
-		Year: time.Time.Year(time.Now()),
+		Year:  time.Time.Year(time.Now()),
+		Flash: app.session.PopString(r.Context(), "flash"),
+		Auth:  app.isUserAuth(r),
 	}
 }
 

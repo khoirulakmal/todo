@@ -3,18 +3,24 @@
 <tr x-data="{status: '{{.Status}}'}" id="data-{{.ID}}">
   <td >{{.Content}}</td>
   <td><span class="badge text-bg-success" x-text="status"></span></td>
-  <td>
+  <td>{{humanDate .Date}}</td>
+  {{ if $.Auth}}
   <button 
   hx-put="/todo/status/{{.ID}}"
   hx-trigger="click"
   class="btn btn-info btn-sm">Done</button>
 
-    <button 
-    hx-put="/todo/delete/{{.ID}}"
-    hx-trigger="click"
-    hx-swap="outerHTML"
-    class="btn btn-danger btn-sm">Delete</button>
-    </td>
+  <button 
+  hx-put="/todo/delete/{{.ID}}"
+  hx-trigger="click"
+  hx-target="#data"
+  hx-swap="outerHTML"
+  class="btn btn-danger btn-sm">Delete</button>
+  {{ else }}
+  <div>
+    Editing not available
+  </div>
+  {{ end }}
 </tr>
 {{end}}
 
