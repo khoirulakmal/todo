@@ -276,3 +276,7 @@ func (app *application) logout(w http.ResponseWriter, r *http.Request) {
 	app.session.Remove(r.Context(), "authUser")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
