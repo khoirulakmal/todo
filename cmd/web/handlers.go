@@ -41,7 +41,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := app.generateTemplateData(r)
-	data.Lists = &result
+	data.Lists = result
 	data.Form = todoForm{
 		Status: "ongo",
 		Validator: validator.Validator{
@@ -279,4 +279,8 @@ func (app *application) logout(w http.ResponseWriter, r *http.Request) {
 
 func ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
+}
+
+func (app *application) putContext(w http.ResponseWriter, r *http.Request) {
+	app.session.Put(r.Context(), "dataID", 1)
 }
