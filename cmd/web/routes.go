@@ -5,6 +5,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
+	"todo.khoirulakmal.dev/ui"
 )
 
 func (app *application) routes() http.Handler {
@@ -15,8 +16,8 @@ func (app *application) routes() http.Handler {
 
 	// Register the two new handler functions and corresponding URL patterns with
 	// the servemux, in exactly the same way that we did before.
-	fs := http.FileServer(http.Dir("./ui/static/"))
-	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fs))
+	fs := http.FileServer(http.FS(ui.Files))
+	router.Handler(http.MethodGet, "/static/*filepath", fs)
 
 	router.HandlerFunc(http.MethodGet, "/ping", ping)
 
