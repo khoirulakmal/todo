@@ -21,8 +21,8 @@ import (
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
-	todos         *models.TodoModel
-	users         *models.UserModel
+	todos         models.ListInterface
+	users         models.UserInterface
 	templateCache map[string]*template.Template
 	session       *scs.SessionManager
 	formDecode    *form.Decoder
@@ -68,6 +68,7 @@ func main() {
 		session:       session,
 		formDecode:    formDecoder,
 	}
+	infoLog.Print(os.Getwd())
 
 	infoLog.Printf("Starting server on %s", *addr)
 	// Initialize a tls.Config struct to hold the non-default TLS settings we

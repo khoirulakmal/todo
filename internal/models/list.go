@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type ListInterface interface {
+	Insert(content string, status string) (int, error)
+	Get(id int) (*List, error)
+	GetRows() ([]*List, error)
+	Delete(id int64) (bool, error)
+	Done(id int64) (bool, error)
+}
+
 type List struct {
 	ID      int
 	Content string
@@ -42,8 +50,8 @@ func (m *TodoModel) Get(id int) (*List, error) {
 	return todoList, nil
 }
 
-func (m *TodoModel) GetRows() ([]List, error) {
-	var lists []List
+func (m *TodoModel) GetRows() ([]*List, error) {
+	var lists []*List
 	statement := "SELECT * FROM lists"
 	result, err := m.DB.Query(statement)
 	if err != nil {
@@ -54,7 +62,7 @@ func (m *TodoModel) GetRows() ([]List, error) {
 		if err := result.Scan(&temp.ID, &temp.Content, &temp.Date, &temp.Status); err != nil {
 			return lists, err
 		}
-		lists = append(lists, temp)
+		lists = append(lists, &temp)
 	}
 	err = result.Err()
 	if err != nil {

@@ -9,6 +9,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserInterface interface {
+	Insert(name, email, password string) error
+	Auth(email, password string) (int, error)
+}
+
 type User struct {
 	ID        int
 	UserName  string

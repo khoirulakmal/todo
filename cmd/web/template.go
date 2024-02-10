@@ -2,16 +2,17 @@ package main
 
 import (
 	"html/template"
-	"log"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"todo.khoirulakmal.dev/internal/models"
+	"todo.khoirulakmal.dev/ui"
 )
 
 type templateData struct {
 	Year  int
-	Lists *[]models.List
+	Lists []*models.List
 	List  *models.List
 	Form  any
 	Flash string
@@ -29,25 +30,24 @@ var functions = template.FuncMap{
 
 func parseTemplate() (map[string]*template.Template, error) {
 	templateCache := make(map[string]*template.Template)
-	pages, err := filepath.Glob("./ui/html/pages/*.html")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
 	if err != nil {
 		return nil, err
 	}
 	for _, page := range pages {
 		name := filepath.Base(page)
-		log.Print(name)
 
 		// Create a slice containing the filepaths for our base template, any
 		// partials and the page.
 		files := []string{
-			"./ui/html/base.html",
-			"./ui/html/partials/nav.html",
-			"./ui/html/dynamic/status.html",
-			"./ui/html/dynamic/data.html",
-			"./ui/html/dynamic/list.html",
+			"html/base.html",
+			"html/partials/nav.html",
+			"html/dynamic/status.html",
+			"html/dynamic/data.html",
+			"html/dynamic/list.html",
 			page,
 		}
-		ts, err := template.New(name).Funcs(functions).ParseFiles(files...)
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, files...)
 		if err != nil {
 			return nil, err
 		}
