@@ -30,6 +30,7 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodPost, "/user/logout", dynamic.ThenFunc(app.logout))
 	router.Handler(http.MethodPost, "/todo/create", dynamic.ThenFunc(app.todoCreate))
 	router.Handler(http.MethodGet, "/todo/created", dynamic.ThenFunc(app.getList))
+	router.Handler(http.MethodGet, "/todo/context", dynamic.ThenFunc(app.putContext))
 	router.Handler(http.MethodPut, "/todo/delete/:id", dynamic.ThenFunc(app.deleteList))
 	router.Handler(http.MethodPut, "/todo/status/:id", dynamic.ThenFunc(app.updateStatus))
 	standard := alice.New(app.recoverPanic, app.requestLog, secureHeader)
